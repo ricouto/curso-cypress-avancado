@@ -74,8 +74,21 @@ describe('Hacker Stories', () => {
     // Hrm, how would I simulate such errors?
     // Since I still don't know, the tests are being skipped.
     // TODO: Find a way to test them out.
-    context.skip('Errors', () => {
-      it('shows "Something went wrong ..." in case of a server error', () => { })
+    context('Errors', () => {
+      it.only('shows "Something went wrong ..." in case of a server error', () => {
+
+        cy.intercept(
+          'GET',
+          '**/search**',
+          { statusCode: 500 }
+        ).as('getServerFailure')
+
+        cy.visit('/')
+        cy.wait('@getServerFailure')
+
+        cy.get('p').should('be.visible')
+          
+      })
 
       it('shows "Something went wrong ..." in case of a network error', () => { })
     })
@@ -128,6 +141,18 @@ describe('Hacker Stories', () => {
         .should('contain', newTerm)
       cy.get(`button:contains(${initialTerm})`)
         .should('be.visible')
+    })
+
+    it('types and submits the form directly', () => {
+      cy.get('form input[type="text"]')
+        .should('be.visible')
+        .clear()
+        .type('cypress')
+      cy.get('form').submit()
+
+      //cy.wait('@getNewTermtStories')
+
+      cy.get('.item').should('have.length', 20)
     })
 
     context('Last searches', () => {
