@@ -74,6 +74,7 @@ describe('Hacker Stories', () => {
     // Hrm, how would I simulate such errors?
     // Since I still don't know, the tests are being skipped.
     // TODO: Find a way to test them out.
+    // testando....
     context('Errors', () => {
       it.only('shows "Something went wrong ..." in case of a server error', () => {
 
