@@ -183,7 +183,7 @@ describe('Hacker Stories', () => {
   })
 
   context.only('Errors', () => {
-    it.only('shows "Something went wrong ..." in case of a server error', () => {
+    it('shows "Something went wrong ..." in case of a server error', () => {
 
       cy.intercept(
         'GET',
@@ -194,11 +194,12 @@ describe('Hacker Stories', () => {
       cy.visit('/')
       cy.wait('@getServerFailure')
 
-      cy.get('p').should('be.visible')
+      cy.get('p:contains(Something went wrong ...)').should('be.visible')
 
     })
 
     it('shows "Something went wrong ..." in case of a network error', () => {
+      
       cy.intercept(
         'GET',
         '**/search**',
@@ -207,7 +208,8 @@ describe('Hacker Stories', () => {
 
       cy.visit('/')
       cy.wait('@getNetworkFailure')
-        //testando GIT......
+
+      cy.get('p:contains(Something went wrong ...)').should('be.visible')
 
     })
   })
