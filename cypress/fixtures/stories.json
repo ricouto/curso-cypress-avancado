@@ -1,0 +1,20 @@
+{
+    "hits": [
+        {
+            "title": "sample 1",
+            "url":"https://exemplo1.com/1",
+            "author": "Author 1",
+            "num_comments": 55,
+            "points": 150,
+            "objectID": 0
+        },
+        {
+            "title": "sample 2",
+            "url":"https://exemplo2.com/2",
+            "author": "Author 2",
+            "num_comments": 68,
+            "points": 17,
+            "objectID": 1
+        }
+    ]
+}
