@@ -69,217 +69,236 @@ describe('Hacker Stories', () => {
   })
 
   context('Mocking the API', () => {
-
-    beforeEach(() => {
-      cy.intercept({
-        method: 'GET',
-        pathname: '**/search',
-        query: {
-          query: initialTerm,
-          page: '0',
-        }
-      },
-        { fixture: 'stories' }
-      ).as('getStories')
-
-      cy.visit('/')
-      cy.wait('@getStories')
-    })
-
-    it('shows the footer', () => {
-      cy.get('footer')
-        .should('be.visible')
-        .and('contain', 'Icons made by Freepik from www.flaticon.com')
-    })
-
-    context('List of stories', () => {
-      // Since the API is external,
-      // I can't control what it will provide to the frontend,
-      // and so, how can I assert on the data?
-      // This is why this test is being skipped.
-      // TODO: Find a way to test it out.
-      it.skip('shows the right data for all rendered stories', () => { })
-
-      it('shows 20 stories, then the next 20 after clicking "More"', () => {
-
+    context('Footer and list of stories', () => {
+      beforeEach(() => {
         cy.intercept({
           method: 'GET',
           pathname: '**/search',
           query: {
             query: initialTerm,
-            page: '1'
+            page: '0',
           }
-        }).as('getNextStories')
+        },
+          { fixture: 'stories' }
+        ).as('getStories')
 
-        cy.get('.item').should('have.length', 20)
-
-        cy.contains('More').click()
-        cy.wait('@getNextStories')
-
-        cy.get('.item').should('have.length', 40)
+        cy.visit('/')
+        cy.wait('@getStories')
       })
 
-      it.only('shows one less story after dimissing the first one', () => {
-        cy.get('.button-small')
-          .first()
-          .click()
-
-        cy.get('.item').should('have.length', 1)
+      it('shows the footer', () => {
+        cy.get('footer')
+          .should('be.visible')
+          .and('contain', 'Icons made by Freepik from www.flaticon.com')
       })
 
-      // Since the API is external,
-      // I can't control what it will provide to the frontend,
-      // and so, how can I test ordering?
-      // This is why these tests are being skipped.
-      // TODO: Find a way to test them out.
-      context.skip('Order by', () => {
-        it('orders by title', () => { })
+      context('List of stories', () => {
+        // Since the API is external,
+        // I can't control what it will provide to the frontend,
+        // and so, how can I assert on the data?
+        // This is why this test is being skipped.
+        // TODO: Find a way to test it out.
+        it.skip('shows the right data for all rendered stories', () => { })
 
-        it('orders by author', () => { })
+        it('shows 20 stories, then the next 20 after clicking "More"', () => {
 
-        it('orders by comments', () => { })
-
-        it('orders by points', () => { })
-      })
-
-      // Hrm, how would I simulate such errors?
-      // Since I still don't know, the tests are being skipped.
-      // TODO: Find a way to test them out.
-
-      context('Search', () => {
-
-        beforeEach(() => {
           cy.intercept({
             method: 'GET',
             pathname: '**/search',
             query: {
-              query: `${newTerm}`
-
+              query: initialTerm,
+              page: '1'
             }
-          }).as('getNewTermtStories')
+          }).as('getNextStories')
 
-          cy.get('#search')
-            .clear()
+          cy.get('.item').should('have.length', 20)
+
+          cy.contains('More').click()
+          cy.wait('@getNextStories')
+
+          cy.get('.item').should('have.length', 40)
         })
 
-        it.skip('types and hits ENTER', () => {
+        it('shows one less story after dimissing the first one', () => {
+          cy.get('.button-small')
+            .first()
+            .click()
 
+          cy.get('.item').should('have.length', 1)
+        })
+
+        // Since the API is external,
+        // I can't control what it will provide to the frontend,
+        // and so, how can I test ordering?
+        // This is why these tests are being skipped.
+        // TODO: Find a way to test them out.
+        context.skip('Order by', () => {
+          it('orders by title', () => { })
+
+          it('orders by author', () => { })
+
+          it('orders by comments', () => { })
+
+          it('orders by points', () => { })
+        })
+      })
+    })
+
+
+    // Hrm, how would I simulate such errors?
+    // Since I still don't know, the tests are being skipped.
+    // TODO: Find a way to test them out.
+
+    context('Search', () => {
+
+      beforeEach(() => {
+        cy.intercept({
+          method: 'GET',
+          pathname: '**/search',
+          query: {
+            query: initialTerm,
+            page: '0',
+          }
+        },
+          { fixture: 'empty' }
+        ).as('getEmptyStories')
+
+        cy.intercept({
+          method: 'GET',
+          pathname: '**/search',
+          query: {
+            query: newTerm,
+            page: '0',
+          }
+        },
+          { fixture: 'stories' }
+        ).as('getStories')
+
+        cy.visit('/')
+        cy.wait('@getEmptyStories')
+
+        cy.get('#search')
+          .clear()
+      })
+
+      it('types and hits ENTER', () => {
+
+        cy.get('#search')
+          .type(`${newTerm}{enter}`)
+
+        cy.wait('@getStories')
+
+        cy.get('.item').should('have.length', 2)
+        // cy.get('.item')
+        //   .first()
+        //   .should('contain', newTerm)
+        cy.get(`button:contains(${initialTerm})`)
+          .should('be.visible')
+      })
+
+      it('types and clicks the submit button', () => {
+        cy.get('#search')
+          .type(newTerm)
+        cy.contains('Submit')
+          .click()
+
+        cy.wait('@getStories')
+
+        cy.get('.item').should('have.length', 2)
+        // cy.get('.item')
+        //   .first()
+        //   .should('contain', newTerm)
+        cy.get(`button:contains(${initialTerm})`)
+          .should('be.visible')
+      })
+
+      it.skip('types and submits the form directly', () => {
+        cy.get('form input[type="text"]')
+          .should('be.visible')
+          .clear()
+          .type('cypress')
+        cy.get('form').submit()
+
+        //cy.wait('@getNewTermtStories')
+
+        cy.get('.item').should('have.length', 20)
+      })
+
+      context('Last searches', () => {
+        it('searches via the last searched term', () => {
           cy.get('#search')
             .type(`${newTerm}{enter}`)
 
           cy.wait('@getNewTermtStories')
 
-          cy.get('.item').should('have.length', 20)
-          cy.get('.item')
-            .first()
-            .should('contain', newTerm)
           cy.get(`button:contains(${initialTerm})`)
             .should('be.visible')
-        })
-
-        it.skip('types and clicks the submit button', () => {
-          cy.get('#search')
-            .type(newTerm)
-          cy.contains('Submit')
             .click()
 
-          cy.wait('@getNewTermtStories')
+          cy.wait('@getStories')
 
           cy.get('.item').should('have.length', 20)
           cy.get('.item')
             .first()
-            .should('contain', newTerm)
-          cy.get(`button:contains(${initialTerm})`)
+            .should('contain', initialTerm)
+          cy.get(`button:contains(${newTerm})`)
             .should('be.visible')
         })
 
-        it.skip('types and submits the form directly', () => {
-          cy.get('form input[type="text"]')
-            .should('be.visible')
-            .clear()
-            .type('cypress')
-          cy.get('form').submit()
+        it.only('shows a max of 5 buttons for the last searched terms', () => {
+          const faker = require('faker')
 
-          //cy.wait('@getNewTermtStories')
+          cy.intercept({
+            method: 'GET',
+            pathname: '**/**'
+          },
+            { fixture: 'empty' }
+          ).as('getRandomStories')
 
-          cy.get('.item').should('have.length', 20)
-        })
-
-        context('Last searches', () => {
-          it('searches via the last searched term', () => {
+          Cypress._.times(6, () => {
             cy.get('#search')
-              .type(`${newTerm}{enter}`)
+              .clear()
+              .type(`${faker.random.word()}{enter}`)
 
-            cy.wait('@getNewTermtStories')
-
-            cy.get(`button:contains(${initialTerm})`)
-              .should('be.visible')
-              .click()
-
-            cy.wait('@getStories')
-
-            cy.get('.item').should('have.length', 20)
-            cy.get('.item')
-              .first()
-              .should('contain', initialTerm)
-            cy.get(`button:contains(${newTerm})`)
-              .should('be.visible')
+            cy.wait('@getRandomStories')
           })
 
-          it.skip('shows a max of 5 buttons for the last searched terms', () => {
-            const faker = require('faker')
-
-            cy.intercept({
-              method: 'GET',
-              pathname: '**/**'
-            }).as('getRandomStories')
-
-            Cypress._.times(6, () => {
-              cy.get('#search')
-                .clear()
-                .type(`${faker.random.word()}{enter}`)
-
-              cy.wait('@getRandomStories')
-            })
-
-            cy.get('.last-searches button')
-              .should('have.length', 5)
-          })
+          cy.get('.last-searches button')
+            .should('have.length', 5)
         })
       })
     })
   })
+})
 
+context('Errors', () => {
+  it('shows "Something went wrong ..." in case of a server error', () => {
 
-  context('Errors', () => {
-    it('shows "Something went wrong ..." in case of a server error', () => {
+    cy.intercept(
+      'GET',
+      '**/search**',
+      { statusCode: 500 }
+    ).as('getServerFailure')
 
-      cy.intercept(
-        'GET',
-        '**/search**',
-        { statusCode: 500 }
-      ).as('getServerFailure')
+    cy.visit('/')
+    cy.wait('@getServerFailure')
 
-      cy.visit('/')
-      cy.wait('@getServerFailure')
+    cy.get('p:contains(Something went wrong ...)').should('be.visible')
 
-      cy.get('p:contains(Something went wrong ...)').should('be.visible')
+  })
 
-    })
+  it('shows "Something went wrong ..." in case of a network error', () => {
 
-    it('shows "Something went wrong ..." in case of a network error', () => {
+    cy.intercept(
+      'GET',
+      '**/search**',
+      { forceNetworkError: true }
+    ).as('getNetworkFailure')
 
-      cy.intercept(
-        'GET',
-        '**/search**',
-        { forceNetworkError: true }
-      ).as('getNetworkFailure')
+    cy.visit('/')
+    cy.wait('@getNetworkFailure')
 
-      cy.visit('/')
-      cy.wait('@getNetworkFailure')
+    cy.get('p:contains(Something went wrong ...)').should('be.visible')
 
-      cy.get('p:contains(Something went wrong ...)').should('be.visible')
-
-    })
   })
 })
